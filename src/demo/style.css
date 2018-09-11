@@ -9,4 +9,12 @@ body {
   bottom: 0;
   left: 0;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#canvas {
+  background-color: #3f3f3f;
+  border: 1px solid #e4d4a7;
 }
