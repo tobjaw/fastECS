@@ -12,11 +12,13 @@ const systems = []
 const PositionComponent = Component('Position')
 const SizeComponent = Component('Size')
 const ColorComponent = Component('Color')
+const VelocityComponent = Component('Velocity')
 
 const Ball1 = Entity({
   id: 'Ball1',
   components: {
     ...PositionComponent({ x: 300, y: 300 }),
+    ...VelocityComponent({ x: 5.2, y: -4.0 }),
     ...SizeComponent(30),
     ...ColorComponent('#CC9393'),
   },
@@ -26,6 +28,7 @@ const Ball2 = Entity({
   id: 'Ball2',
   components: {
     ...PositionComponent({ x: 200, y: 100 }),
+    ...VelocityComponent({ x: -3.2, y: 3.0 }),
     ...SizeComponent(25),
     ...ColorComponent('#8FB28F'),
   },
@@ -53,7 +56,23 @@ const RenderSystem = System({
   },
 })
 
-systems.push(RenderSystem)
+const MovementSystem = System({
+  entities,
+  selector: (entity) =>
+    entity.components.Position != null && entity.components.Velocity != null,
+  run: (entities) => {
+    entities.map((entity) => {
+      const { Position, Velocity } = entity.components
+
+      entity.components.Position = {
+        x: Position.x + Velocity.x,
+        y: Position.y + Velocity.y,
+      }
+    })
+  },
+})
+
+systems.push(RenderSystem, MovementSystem)
 
 const main = () => {
   systems.map((system) => system.run())
