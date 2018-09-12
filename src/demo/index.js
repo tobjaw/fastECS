@@ -13,6 +13,8 @@ const PositionComponent = Component('Position')
 const SizeComponent = Component('Size')
 const ColorComponent = Component('Color')
 const VelocityComponent = Component('Velocity')
+const MassComponent = Component('Mass')
+const AccelerationComponent = Component('Acceleration')
 
 const Ball1 = Entity({
   id: 'Ball1',
@@ -34,7 +36,19 @@ const Ball2 = Entity({
   },
 })
 
-entities.push(Ball1, Ball2)
+const Ball3 = Entity({
+  id: 'Ball3',
+  components: {
+    ...AccelerationComponent({ x: 0, y: 0 }),
+    ...PositionComponent({ x: 250, y: 150 }),
+    ...VelocityComponent({ x: 0, y: 0 }),
+    ...SizeComponent(30),
+    ...ColorComponent('#CCCCCC'),
+    ...MassComponent(1 / 15),
+  },
+})
+
+entities.push(Ball1, Ball2, Ball3)
 
 const RenderSystem = System({
   entities,
@@ -59,7 +73,9 @@ const RenderSystem = System({
 const MovementSystem = System({
   entities,
   selector: (entity) =>
-    entity.components.Position != null && entity.components.Velocity != null,
+    entity.components.Position != null &&
+    entity.components.Velocity != null &&
+    entity.components.Mass == null,
   run: (entities) => {
     entities.map((entity) => {
       const { Position, Velocity } = entity.components
@@ -98,7 +114,35 @@ const CollisionSystem = System({
   },
 })
 
-systems.push(MovementSystem, CollisionSystem, RenderSystem)
+const GRAVITY = 9.81
+const DAMPING = 0.999
+const PhysicsSystem = System({
+  entities,
+  selector: (entity) =>
+    entity.components.Acceleration != null &&
+    entity.components.Position != null &&
+    entity.components.Velocity != null &&
+    entity.components.Size != null &&
+    entity.components.Mass != null,
+  run: (entities) => {
+    entities.map((entity) => {
+      const { Position, Velocity, Mass, Size } = entity.components
+
+      entity.components.Acceleration.x = 0
+      entity.components.Acceleration.y = GRAVITY * Mass
+
+      entity.components.Velocity.x =
+        (Velocity.x + entity.components.Acceleration.x) * DAMPING
+      entity.components.Velocity.y =
+        (Velocity.y + entity.components.Acceleration.y) * DAMPING
+
+      entity.components.Position.x = Position.x + entity.components.Velocity.x
+      entity.components.Position.y = Position.y + entity.components.Velocity.y
+    })
+  },
+})
+
+systems.push(PhysicsSystem, MovementSystem, CollisionSystem, RenderSystem)
 
 const main = () => {
   systems.map((system) => system.run())
