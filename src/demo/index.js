@@ -19,20 +19,24 @@ const AccelerationComponent = Component('Acceleration')
 const Ball1 = Entity({
   id: 'Ball1',
   components: {
+    ...AccelerationComponent({ x: 0, y: 0 }),
     ...PositionComponent({ x: 300, y: 300 }),
     ...VelocityComponent({ x: 5.2, y: -4.0 }),
     ...SizeComponent(30),
     ...ColorComponent('#CC9393'),
+    ...MassComponent(1 / 15),
   },
 })
 
 const Ball2 = Entity({
   id: 'Ball2',
   components: {
+    ...AccelerationComponent({ x: 0, y: 0 }),
     ...PositionComponent({ x: 200, y: 100 }),
     ...VelocityComponent({ x: -3.2, y: 3.0 }),
     ...SizeComponent(25),
     ...ColorComponent('#8FB28F'),
+    ...MassComponent(1 / 15),
   },
 })
 
@@ -49,6 +53,29 @@ const Ball3 = Entity({
 })
 
 entities.push(Ball1, Ball2, Ball3)
+
+const rand = (min, max) => Math.random() * (max - min) + min
+const randColor = () => '#' + Math.floor(Math.random() * 16777215).toString(16)
+// https://www.paulirish.com/2009/random-hex-color-code-snippets/
+
+for (let i = 4; i < 100; i++) {
+  entities.push(
+    Entity({
+      id: `Ball${i}`,
+      components: {
+        ...AccelerationComponent({ x: 0, y: 0 }),
+        ...PositionComponent({
+          x: rand(50, WIDTH - 50),
+          y: rand(50, HEIGHT - 50),
+        }),
+        ...VelocityComponent({ x: rand(-50, 50), y: rand(-10, 10) }),
+        ...SizeComponent(rand(5, 50)),
+        ...ColorComponent(randColor()),
+        ...MassComponent(1 / rand(100, 1)),
+      },
+    }),
+  )
+}
 
 const RenderSystem = System({
   entities,
