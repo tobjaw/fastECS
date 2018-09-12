@@ -72,7 +72,33 @@ const MovementSystem = System({
   },
 })
 
-systems.push(RenderSystem, MovementSystem)
+const CollisionSystem = System({
+  entities,
+  selector: (entity) =>
+    entity.components.Position != null && entity.components.Velocity != null,
+  run: (entities) => {
+    entities.map((entity) => {
+      const { Position, Velocity, Size } = entity.components
+
+      if (Position.x - Size / 2 < 0) {
+        entity.components.Velocity.x = -1 * Velocity.x
+        entity.components.Position.x = Size / 2
+      } else if (Position.x + Size / 2 > WIDTH) {
+        entity.components.Velocity.x = -1 * Velocity.x
+        entity.components.Position.x = WIDTH - Size / 2
+      }
+      if (Position.y - Size / 2 < 0) {
+        entity.components.Velocity.y = -1 * Velocity.y
+        entity.components.Position.y = Size / 2
+      } else if (Position.y + Size / 2 > HEIGHT) {
+        entity.components.Velocity.y = -1 * Velocity.y
+        entity.components.Position.y = HEIGHT - Size / 2
+      }
+    })
+  },
+})
+
+systems.push(MovementSystem, CollisionSystem, RenderSystem)
 
 const main = () => {
   systems.map((system) => system.run())
